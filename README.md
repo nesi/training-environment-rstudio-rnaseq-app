@@ -1,3 +1,3 @@
-# NeSI training environment RStudio app
+# NeSI training environment RNA-Seq RStudio app
 
-Open OnDemand RStudio app for the NeSI training environment.
+RStudio app for the RNA-Seq workshop running on the NeSI training environment.
