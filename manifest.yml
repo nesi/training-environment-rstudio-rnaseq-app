@@ -1,0 +1,8 @@
+---
+name: RNA-Seq
+category: Interactive Apps
+role: batch_connect
+description: |
+  This app will launch [RStudio Server] for the RNA-Seq workshop.
+
+  [RStudio Server]: https://www.rstudio.com/products/rstudio-server/

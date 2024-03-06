@@ -1,0 +1,59 @@
+#!/usr/bin/env bash
+
+#
+# Start RStudio Server
+#
+# PAM auth helper used by RStudio
+export WORKING_DIR="<%= session.staged_root %>"
+export RSTUDIO_AUTH="$WORKING_DIR/bin/auth"
+
+export PATH="$PATH:/usr/lib/rstudio-server/bin"
+
+# Generate an `rsession` wrapper script
+export RSESSION_WRAPPER_FILE="$WORKING_DIR/rsession.sh"
+(
+umask 077
+sed 's/^ \{2\}//' > "$WORKING_DIR/rsession.sh" << EOL
+  #!/usr/bin/env bash
+
+  # Log all output from this script
+  export RSESSION_LOG_FILE="$WORKING_DIR/rsession.log"
+
+  exec &>>"\${RSESSION_LOG_FILE}"
+
+  # rsession.sh doesn't share the same env as the outside script, so these
+  # need to be set explicitly
+  export TZ="Pacific/Auckland"
+  export PATH="$PATH"
+
+  # Launch the original command
+  echo "Launching rsession..."
+  set -x
+  exec rsession "\${@}"
+EOL
+)
+chmod 700 "$WORKING_DIR/rsession.sh"
+mkdir -p "$WORKING_DIR/logs"
+mkdir -p /tmp/rserver-run
+
+cd $HOME
+
+set -x
+echo "Starting up rserver..."
+
+# copy data
+#rsync --ignore-existing -avz /var/lib/RNA_seq/ ~/RNA_seq/
+
+# launch rserver
+rserver \
+    --www-port=8080 \
+    --auth-none=0 \
+    --auth-pam-helper-path="${RSTUDIO_AUTH}" \
+    --auth-encrypt-password=0 \
+    --auth-timeout-minutes=0 \
+    --database-config-file='/etc/rstudio/database/database.conf' \
+    --server-data-dir='/tmp/rserver-run' \
+    --server-daemonize=0 \
+    --server-user=$(whoami) \
+    --rsession-path "${RSESSION_WRAPPER_FILE}" \
+    --server-app-armor-enabled=0
