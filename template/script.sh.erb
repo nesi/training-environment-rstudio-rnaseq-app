@@ -42,7 +42,7 @@ set -x
 echo "Starting up rserver..."
 
 # copy data
-#rsync --ignore-existing -avz /var/lib/RNA_seq/ ~/RNA_seq/
+rsync --ignore-existing -avz /var/lib/RNA_seq/ ~/RNA_seq/
 
 # launch rserver
 rserver \
