@@ -75,4 +75,4 @@ RUN Rscript -e 'install.packages("BiocManager", repos = "https://cloud.r-project
     && Rscript -e 'BiocManager::install("GO.db")'
 
 # copy data
-COPY RNA_seq/ /var/lib/RNA_seq/
+COPY docker/RNA_seq/ /var/lib/RNA_seq/
