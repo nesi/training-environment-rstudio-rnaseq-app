@@ -13,7 +13,7 @@ script:
   native:
     container:
       name: "rnaseq"
-      image: "ghcr.io/nesi/training-environment-rstudio-rnaseq-app:v0.3.0"
+      image: "ghcr.io/nesi/training-environment-rstudio-rnaseq-app:v0.4.0"
       command: ["/bin/bash","-l","<%= staged_root %>/job_script_content.sh"]
       restart_policy: 'OnFailure'
       env:
