@@ -60,6 +60,9 @@ RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -
        samtools \
        subread \
        bamtools \
+       salmon \
+       star \
+       qualimap \
     && echo ". /opt/miniconda3/etc/profile.d/conda.sh" > /etc/profile.d/conda.sh \
     && echo "conda activate /var/lib/rnaseq" >> /etc/profile.d/conda.sh
 
