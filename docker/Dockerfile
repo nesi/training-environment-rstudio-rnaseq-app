@@ -1,4 +1,4 @@
-FROM rocker/geospatial:latest
+FROM rocker/geospatial:4.4.1
 
 # install system dependencies
 # TODO: move ldap-utils, libnss-ldapd, libpam-ldapd, nscd, nslcd to base image??
