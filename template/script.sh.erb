@@ -26,6 +26,11 @@ sed 's/^ \{2\}//' > "$WORKING_DIR/rsession.sh" << EOL
   export TZ="Pacific/Auckland"
   export PATH="$PATH"
 
+  #This is to resolve issue : https://github.com/nesi/nesi-ood-rstudio-server-app/issues/13
+  if [ ! -f ~/.inputrc ] || ! grep -qF 'set enable-bracketed-paste off' ~/.inputrc; then
+      echo 'set enable-bracketed-paste off' >> ~/.inputrc
+  fi
+
   # Launch the original command
   echo "Launching rsession..."
   set -x
