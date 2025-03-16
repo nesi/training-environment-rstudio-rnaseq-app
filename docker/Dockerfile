@@ -41,6 +41,23 @@ RUN git clone https://github.com/nesi/training-environment-k8s-utils.git /opt/oo
 RUN echo "#!/bin/bash" > /bin/module \
     && chmod +x /bin/module
 
+    # Set R environment variables to ensure RStudio uses the correct R version
+ENV R_HOME=/usr/local/lib/R
+ENV PATH=/usr/local/bin:$PATH
+
+# install R packages
+RUN Rscript -e 'install.packages("BiocManager", repos = "https://cloud.r-project.org")' \
+    && Rscript -e 'BiocManager::install("limma")' \
+    && Rscript -e 'BiocManager::install("edgeR")' \
+    && Rscript -e 'BiocManager::install("DESeq2")' \
+    && Rscript -e 'install.packages("beeswarm")' \
+    && Rscript -e 'install.packages("knitr")' \
+    && Rscript -e 'install.packages("gplots")' \
+    && Rscript -e 'BiocManager::install("goseq")' \
+    && Rscript -e 'BiocManager::install("GO.db")' \
+    && Rscript -e 'BiocManager::install("org.Sc.sgd.db")'
+
+
 # install miniconda, create environment and install packages
 RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O /miniconda.sh \
     && bash /miniconda.sh -b -p /opt/miniconda3 \
@@ -66,17 +83,9 @@ RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -
     && echo ". /opt/miniconda3/etc/profile.d/conda.sh" > /etc/profile.d/conda.sh \
     && echo "conda activate /var/lib/rnaseq" >> /etc/profile.d/conda.sh
 
-# install R packages
-RUN Rscript -e 'install.packages("BiocManager", repos = "https://cloud.r-project.org")' \
-    && Rscript -e 'BiocManager::install("limma")' \
-    && Rscript -e 'BiocManager::install("edgeR")' \
-    && Rscript -e 'BiocManager::install("DESeq2")' \
-    && Rscript -e 'install.packages("beeswarm")' \
-    && Rscript -e 'install.packages("knitr")' \
-    && Rscript -e 'install.packages("gplots")' \
-    && Rscript -e 'BiocManager::install("goseq")' \
-    && Rscript -e 'BiocManager::install("GO.db")' \
-    && Rscript -e 'BiocManager::install("org.Sc.sgd.db")'
+
+# Also explicitly configure RStudio to use the correct R version
+RUN echo "rsession-which-r=/usr/local/bin/R" >> /etc/rstudio/rserver.conf
 
 # copy data
 COPY docker/RNA_seq/ /var/lib/RNA_seq/
