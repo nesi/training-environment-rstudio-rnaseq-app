@@ -1,4 +1,4 @@
-FROM rocker/geospatial:4.3.3
+FROM rocker/geospatial:latest
 
 # install system dependencies
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
@@ -150,7 +150,7 @@ RUN apt-get update && \
     libfontconfig1-dev \
     libharfbuzz-dev \
     libfribidi-dev \
-    libzlib-dev \
+    zlib1g-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # install R packages
