@@ -137,6 +137,9 @@ RUN wget https://bitbucket.org/kokonech/qualimap/downloads/qualimap_v2.3.zip && 
     chmod +x /usr/local/bin/qualimap && \
     rm qualimap_v2.3.zip
 
+#create a symlink for python as hisat2 hashbangs are set for python and not python3
+RUN ln -s /usr/bin/python3 /usr/bin/python 
+
 # install R packages
 RUN Rscript -e 'install.packages("BiocManager", repos = "https://cloud.r-project.org")' \
     && Rscript -e 'BiocManager::install("limma")' \
