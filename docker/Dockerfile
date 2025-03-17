@@ -83,6 +83,11 @@ RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -
     && echo ". /opt/miniconda3/etc/profile.d/conda.sh" > /etc/profile.d/conda.sh \
     && echo "conda activate /var/lib/rnaseq" >> /etc/profile.d/conda.sh
 
+# Make sure the system R is used by default
+RUN echo '#!/bin/bash\nexec /usr/local/bin/R "$@"' > /usr/bin/R && \
+    chmod +x /usr/bin/R && \
+    echo '#!/bin/bash\nexec /usr/local/bin/Rscript "$@"' > /usr/bin/Rscript && \
+    chmod +x /usr/bin/Rscript
 
 # Also explicitly configure RStudio to use the correct R version
 RUN echo "rsession-which-r=/usr/local/bin/R" >> /etc/rstudio/rserver.conf
