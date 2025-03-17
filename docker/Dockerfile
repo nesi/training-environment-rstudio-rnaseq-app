@@ -34,6 +34,21 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
         default-jre \
     && rm -rf /var/lib/apt/lists/*
 
+
+# Following libraries are to supplement some of the requirements by more recent R graphics libs
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    libfreetype6-dev \
+    libpng-dev \
+    libtiff5-dev \
+    libjpeg-dev \
+    libfontconfig1-dev \
+    libharfbuzz-dev \
+    libfribidi-dev \
+    zlib1g-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+
 # Make sure RStudio uses the correct R version
 RUN echo "rsession-which-r=/usr/local/bin/R" > /etc/rstudio/rserver.conf
 
@@ -120,14 +135,12 @@ RUN wget https://github.com/COMBINE-lab/salmon/releases/download/v1.10.0/salmon-
     cp -r salmon-latest_linux_x86_64/lib/* /usr/local/lib/ && \
     rm -rf salmon-1.10.1*
 
-# Install STAR
-RUN wget https://github.com/alexdobin/STAR/archive/2.7.11a.tar.gz && \
-    tar -xzf 2.7.11a.tar.gz && \
-    cd STAR-2.7.11a/source && \
-    make STAR && \
-    cp STAR /usr/local/bin/ && \
-    cd ../.. && \
-    rm -rf STAR-2.7.11a* 2.7.11a.tar.gz
+
+# Install STAR with required dependencies
+RUN wget https://github.com/alexdobin/STAR/releases/download/2.7.11b/STAR_2.7.11b.zip && \
+    unzip STAR_2.7.11b.zip && \
+    cp STAR_2.7.11b/Linux_x86_64/STAR* /usr/local/bin/ && \
+    rm -rf STAR_2.7.11b*
 
 # Install QualiMap
 RUN wget https://bitbucket.org/kokonech/qualimap/downloads/qualimap_v2.3.zip && \
@@ -137,21 +150,9 @@ RUN wget https://bitbucket.org/kokonech/qualimap/downloads/qualimap_v2.3.zip && 
     chmod +x /usr/local/bin/qualimap && \
     rm qualimap_v2.3.zip
 
+
 #create a symlink for python as hisat2 hashbangs are set for python and not python3
 RUN ln -s /usr/bin/python3 /usr/bin/python 
-
-# Installing these packages to avoid any conflicts with the graphics libraries
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-    libfreetype6-dev \
-    libpng-dev \
-    libtiff5-dev \
-    libjpeg-dev \
-    libfontconfig1-dev \
-    libharfbuzz-dev \
-    libfribidi-dev \
-    zlib1g-dev \
-    && rm -rf /var/lib/apt/lists/*
 
 # install R packages
 RUN Rscript -e 'install.packages("BiocManager", repos = "https://cloud.r-project.org")' \
