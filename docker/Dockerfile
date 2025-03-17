@@ -140,6 +140,19 @@ RUN wget https://bitbucket.org/kokonech/qualimap/downloads/qualimap_v2.3.zip && 
 #create a symlink for python as hisat2 hashbangs are set for python and not python3
 RUN ln -s /usr/bin/python3 /usr/bin/python 
 
+# Installing these packages to avoid any conflicts with the graphics libraries
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    libfreetype6-dev \
+    libpng-dev \
+    libtiff5-dev \
+    libjpeg-dev \
+    libfontconfig1-dev \
+    libharfbuzz-dev \
+    libfribidi-dev \
+    libzlib-dev \
+    && rm -rf /var/lib/apt/lists/*
+
 # install R packages
 RUN Rscript -e 'install.packages("BiocManager", repos = "https://cloud.r-project.org")' \
     && Rscript -e 'BiocManager::install("limma")' \
