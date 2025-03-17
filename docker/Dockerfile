@@ -1,4 +1,3 @@
-
 FROM rocker/geospatial:4.3.3
 
 # install system dependencies
@@ -20,6 +19,19 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
         vim \
         wget \
         zip \
+        python3 \
+        python3-pip \
+        python3-venv \
+        python3-dev \
+        build-essential \
+        zlib1g-dev \
+        libncurses5-dev \
+        libncursesw5-dev \
+        libbz2-dev \
+        liblzma-dev \
+        libcurl4-openssl-dev \
+        libssl-dev \
+        default-jre \
     && rm -rf /var/lib/apt/lists/*
 
 # Make sure RStudio uses the correct R version
@@ -44,6 +56,87 @@ RUN git clone https://github.com/nesi/training-environment-k8s-utils.git /opt/oo
 RUN echo "#!/bin/bash" > /bin/module \
     && chmod +x /bin/module
 
+# Install Python-based tools in a virtual environment
+RUN python3 -m venv /opt/venv && \
+    /opt/venv/bin/pip install --upgrade pip && \
+    /opt/venv/bin/pip install \
+    multiqc \
+    cutadapt && \
+    # Create symlinks to the venv binaries
+    ln -s /opt/venv/bin/multiqc /usr/local/bin/ && \
+    ln -s /opt/venv/bin/cutadapt /usr/local/bin/
+
+# Install FastQC
+RUN wget https://www.bioinformatics.babraham.ac.uk/projects/fastqc/fastqc_v0.12.1.zip && \
+    unzip fastqc_v0.12.1.zip && \
+    mv FastQC /opt/ && \
+    chmod +x /opt/FastQC/fastqc && \
+    ln -s /opt/FastQC/fastqc /usr/local/bin/fastqc && \
+    rm fastqc_v0.12.1.zip
+
+# Install samtools
+RUN wget https://github.com/samtools/samtools/releases/download/1.18/samtools-1.18.tar.bz2 && \
+    tar -xjf samtools-1.18.tar.bz2 && \
+    cd samtools-1.18 && \
+    ./configure --prefix=/usr/local && \
+    make && \
+    make install && \
+    cd .. && \
+    rm -rf samtools-1.18*
+
+# Install hisat2
+RUN wget https://cloud.biohpc.swmed.edu/index.php/s/fE9QCsX3NH4QwBi/download -O hisat2-2.2.1-Linux_x86_64.zip && \
+    unzip hisat2-2.2.1-Linux_x86_64.zip && \
+    cd hisat2-2.2.1/ && \
+    make && \
+    cd .. && \
+    mv hisat2-2.2.1/hisat2* /usr/local/bin/ && \
+    mv hisat2-2.2.1/extract_exons* /usr/local/bin/ && \
+    rm -rf hisat2-2.2.1*
+
+# Install subread
+RUN wget https://sourceforge.net/projects/subread/files/subread-2.0.3/subread-2.0.3-Linux-x86_64.tar.gz/download -O subread-2.0.3-Linux-x86_64.tar.gz && \
+    tar -xzf subread-2.0.3-Linux-x86_64.tar.gz && \
+    cp -r subread-2.0.3-Linux-x86_64/bin/* /usr/local/bin/ && \
+    rm -rf subread-2.0.3*
+
+# Install bamtools
+RUN apt-get update && apt-get install -y cmake && \
+    git clone https://github.com/pezmaster31/bamtools.git && \
+    cd bamtools && \
+    mkdir build && \
+    cd build && \
+    cmake -DCMAKE_INSTALL_PREFIX=/usr/local .. && \
+    make && \
+    make install && \
+    cd ../.. && \
+    rm -rf bamtools && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Install salmon
+RUN wget https://github.com/COMBINE-lab/salmon/releases/download/v1.10.0/salmon-1.10.0_linux_x86_64.tar.gz && \
+    tar -xzf salmon-1.10.0_linux_x86_64.tar.gz  && \
+    cp -r salmon-latest_linux_x86_64/bin/* /usr/local/bin/ && \
+    cp -r salmon-latest_linux_x86_64/lib/* /usr/local/lib/ && \
+    rm -rf salmon-1.10.1*
+
+# Install STAR
+RUN wget https://github.com/alexdobin/STAR/archive/2.7.11a.tar.gz && \
+    tar -xzf 2.7.11a.tar.gz && \
+    cd STAR-2.7.11a/source && \
+    make STAR && \
+    cp STAR /usr/local/bin/ && \
+    cd ../.. && \
+    rm -rf STAR-2.7.11a* 2.7.11a.tar.gz
+
+# Install QualiMap
+RUN wget https://bitbucket.org/kokonech/qualimap/downloads/qualimap_v2.3.zip && \
+    unzip qualimap_v2.3.zip && \
+    mv qualimap_v2.3 /opt/qualimap && \
+    echo '#!/bin/bash\njava -Xms32m -Xmx2g -jar /opt/qualimap/qualimap.jar "$@"' > /usr/local/bin/qualimap && \
+    chmod +x /usr/local/bin/qualimap && \
+    rm qualimap_v2.3.zip
+
 # install R packages
 RUN Rscript -e 'install.packages("BiocManager", repos = "https://cloud.r-project.org")' \
     && Rscript -e 'BiocManager::install("limma")' \
@@ -54,41 +147,11 @@ RUN Rscript -e 'install.packages("BiocManager", repos = "https://cloud.r-project
     && Rscript -e 'install.packages("gplots")' \
     && Rscript -e 'BiocManager::install("goseq")' \
     && Rscript -e 'BiocManager::install("GO.db")' \
-    && Rscript -e 'BiocManager::install("org.Sc.sgd.db")'
+    && Rscript -e 'BiocManager::install("org.Sc.sgd.db")' \
+    && Rscript -e 'install.packages("ggiraph")'
 
-# install miniconda, create environment and install packages WITHOUT R
-RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O /miniconda.sh \
-    && bash /miniconda.sh -b -p /opt/miniconda3 \
-    && rm -f /miniconda.sh \
-    && . /opt/miniconda3/etc/profile.d/conda.sh \
-    && conda config --set auto_activate_base false \
-    && conda config --add channels defaults \
-    && conda config --add channels bioconda \
-    && conda config --add channels conda-forge \
-    && conda config --set channel_priority strict \
-    # Create conda env explicitly WITHOUT r-base
-    && conda create --yes --prefix /var/lib/rnaseq \
-       python=3.10 \
-       fastqc \
-       multiqc \
-       cutadapt \
-       hisat2 \
-       samtools \
-       subread \
-       bamtools \
-       salmon \
-       star \
-       qualimap \
-    && echo ". /opt/miniconda3/etc/profile.d/conda.sh" > /etc/profile.d/conda.sh \
-    && echo "conda activate /var/lib/rnaseq" >> /etc/profile.d/conda.sh
-
-# Create R wrapper scripts that force the use of the system R
-RUN echo '#!/bin/bash' > /usr/bin/R \
-    && echo 'exec /usr/local/bin/R "$@"' >> /usr/bin/R \
-    && chmod +x /usr/bin/R \
-    && echo '#!/bin/bash' > /usr/bin/Rscript \
-    && echo 'exec /usr/local/bin/Rscript "$@"' >> /usr/bin/Rscript \
-    && chmod +x /usr/bin/Rscript
+# Set up environment variables for the virtual environment
+ENV PATH="/opt/venv/bin:$PATH"
 
 # copy data
 COPY docker/RNA_seq/ /var/lib/RNA_seq/
