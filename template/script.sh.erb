@@ -7,13 +7,7 @@
 export WORKING_DIR="<%= session.staged_root %>"
 export RSTUDIO_AUTH="$WORKING_DIR/bin/auth"
 
-export PATH="/usr/local/bin:$PATH"
-export R_HOME="/usr/local/lib/R"
-
 export PATH="$PATH:/usr/lib/rstudio-server/bin"
-
-# Ensure RStudio configuration uses the right R
-echo "rsession-which-r=/usr/local/bin/R" >> /etc/rstudio/rserver.conf
 
 # Generate an `rsession` wrapper script
 export RSESSION_WRAPPER_FILE="$WORKING_DIR/rsession.sh"
@@ -31,7 +25,6 @@ sed 's/^ \{2\}//' > "$WORKING_DIR/rsession.sh" << EOL
   # need to be set explicitly
   export TZ="Pacific/Auckland"
   export PATH="/usr/local/bin:$PATH"
-  export R_HOME="/usr/local/lib/R"
 
   #This is to resolve issue : https://github.com/nesi/nesi-ood-rstudio-server-app/issues/13
   if [ ! -f ~/.inputrc ] || ! grep -qF 'set enable-bracketed-paste off' ~/.inputrc; then
@@ -68,5 +61,4 @@ rserver \
     --server-daemonize=0 \
     --server-user=$(whoami) \
     --rsession-path "${RSESSION_WRAPPER_FILE}" \
-    --rsession-which-r="/usr/local/bin/R" \
     --server-app-armor-enabled=0

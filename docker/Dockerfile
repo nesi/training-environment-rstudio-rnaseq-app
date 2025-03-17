@@ -1,7 +1,7 @@
+
 FROM rocker/geospatial:4.3.3
 
 # install system dependencies
-# TODO: move ldap-utils, libnss-ldapd, libpam-ldapd, nscd, nslcd to base image??
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
         curl \
         dnsutils \
@@ -22,6 +22,9 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
         zip \
     && rm -rf /var/lib/apt/lists/*
 
+# Make sure RStudio uses the correct R version
+RUN echo "rsession-which-r=/usr/local/bin/R" > /etc/rstudio/rserver.conf
+
 # install kubectl, required for running on the k8s cluster
 ARG KUBECTL_VERSION=v1.28.5
 RUN curl -LO https://dl.k8s.io/release/$KUBECTL_VERSION/bin/linux/amd64/kubectl \
@@ -41,10 +44,6 @@ RUN git clone https://github.com/nesi/training-environment-k8s-utils.git /opt/oo
 RUN echo "#!/bin/bash" > /bin/module \
     && chmod +x /bin/module
 
-    # Set R environment variables to ensure RStudio uses the correct R version
-ENV R_HOME=/usr/local/lib/R
-ENV PATH=/usr/local/bin:$PATH
-
 # install R packages
 RUN Rscript -e 'install.packages("BiocManager", repos = "https://cloud.r-project.org")' \
     && Rscript -e 'BiocManager::install("limma")' \
@@ -57,8 +56,7 @@ RUN Rscript -e 'install.packages("BiocManager", repos = "https://cloud.r-project
     && Rscript -e 'BiocManager::install("GO.db")' \
     && Rscript -e 'BiocManager::install("org.Sc.sgd.db")'
 
-
-# install miniconda, create environment and install packages
+# install miniconda, create environment and install packages WITHOUT R
 RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O /miniconda.sh \
     && bash /miniconda.sh -b -p /opt/miniconda3 \
     && rm -f /miniconda.sh \
@@ -68,6 +66,7 @@ RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -
     && conda config --add channels bioconda \
     && conda config --add channels conda-forge \
     && conda config --set channel_priority strict \
+    # Create conda env explicitly WITHOUT r-base
     && conda create --yes --prefix /var/lib/rnaseq \
        python=3.10 \
        fastqc \
@@ -83,14 +82,13 @@ RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -
     && echo ". /opt/miniconda3/etc/profile.d/conda.sh" > /etc/profile.d/conda.sh \
     && echo "conda activate /var/lib/rnaseq" >> /etc/profile.d/conda.sh
 
-# Make sure the system R is used by default
-RUN echo '#!/bin/bash\nexec /usr/local/bin/R "$@"' > /usr/bin/R && \
-    chmod +x /usr/bin/R && \
-    echo '#!/bin/bash\nexec /usr/local/bin/Rscript "$@"' > /usr/bin/Rscript && \
-    chmod +x /usr/bin/Rscript
-
-# Also explicitly configure RStudio to use the correct R version
-RUN echo "rsession-which-r=/usr/local/bin/R" >> /etc/rstudio/rserver.conf
+# Create R wrapper scripts that force the use of the system R
+RUN echo '#!/bin/bash' > /usr/bin/R \
+    && echo 'exec /usr/local/bin/R "$@"' >> /usr/bin/R \
+    && chmod +x /usr/bin/R \
+    && echo '#!/bin/bash' > /usr/bin/Rscript \
+    && echo 'exec /usr/local/bin/Rscript "$@"' >> /usr/bin/Rscript \
+    && chmod +x /usr/bin/Rscript
 
 # copy data
 COPY docker/RNA_seq/ /var/lib/RNA_seq/
