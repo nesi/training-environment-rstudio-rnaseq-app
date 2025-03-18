@@ -165,7 +165,8 @@ RUN Rscript -e 'install.packages("BiocManager", repos = "https://cloud.r-project
     && Rscript -e 'BiocManager::install("goseq")' \
     && Rscript -e 'BiocManager::install("GO.db")' \
     && Rscript -e 'BiocManager::install("org.Sc.sgd.db")' \
-    && Rscript -e 'install.packages("ggiraph")'
+    && Rscript -e 'install.packages("ggiraph")' \
+    && Rscript -e 'install.packages("plotly")'
 
 # Set up environment variables for the virtual environment
 ENV PATH="/opt/venv/bin:$PATH"
