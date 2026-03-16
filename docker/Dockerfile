@@ -142,15 +142,19 @@ RUN wget https://github.com/alexdobin/STAR/releases/download/2.7.11b/STAR_2.7.11
     cp STAR_2.7.11b/Linux_x86_64/STAR* /usr/local/bin/ && \
     rm -rf STAR_2.7.11b*
 
-# Install QualiMap
-# RUN wget https://bitbucket.org/kokonech/qualimap/downloads/qualimap_v2.3.zip && \
-# the above would not download, so switched to the dropbox link provided by MattB
-RUN wget https://www.dropbox.com/scl/fi/99rhz8q113vwi403bv6ys/qualimap_v2.3.zip \
-    unzip qualimap_v2.3.zip && \
-    mv qualimap_v2.3 /opt/qualimap && \
-    echo '#!/bin/bash\njava -Xms32m -Xmx2g -jar /opt/qualimap/qualimap.jar "$@"' > /usr/local/bin/qualimap && \
-    chmod +x /usr/local/bin/qualimap && \
-    rm qualimap_v2.3.zip
+# Install QualiMap (resilient)
+RUN set -eux; \
+    curl -fSL --retry 5 --retry-connrefused --retry-delay 3 \
+      -o qualimap_v2.3.zip \
+      https://bitbucket.org/kokonech/qualimap/downloads/qualimap_v2.3.zip \
+    || curl -fSL --retry 5 --retry-connrefused --retry-delay 3 \
+      -o qualimap_v2.3.zip \
+      http://qualimap.conesalab.org/qualimap_v2.3.zip; \
+    unzip -q qualimap_v2.3.zip; \
+    mv qualimap_v2.3 /opt/qualimap; \
+    printf '%s\n' '#!/bin/bash' 'exec java -Xms32m -Xmx2g -jar /opt/qualimap/qualimap.jar "$@"' > /usr/local/bin/qualimap; \
+    chmod +x /usr/local/bin/qualimap; \
+    rm -f qualimap_v2.3.zip
 
 #create a symlink for python as hisat2 hashbangs are set for python and not python3
 RUN ln -s /usr/bin/python3 /usr/bin/python 
@@ -167,7 +171,7 @@ RUN Rscript -e 'install.packages("BiocManager", repos = "https://cloud.r-project
     && Rscript -e 'BiocManager::install("GO.db")' \
     && Rscript -e 'BiocManager::install("org.Sc.sgd.db")' \
     && Rscript -e 'install.packages("ggiraph")' \
-    && Rscript -e 'install.packages("plotly")'
+    && Rscript -e 'install.packages("plotly")' \
 
 # Set up environment variables for the virtual environment
 ENV PATH="/opt/venv/bin:$PATH"
