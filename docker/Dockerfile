@@ -1,4 +1,4 @@
-FROM rocker/geospatial:latest
+FROM rocker/geospatial:4.5.3
 
 # install system dependencies
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
