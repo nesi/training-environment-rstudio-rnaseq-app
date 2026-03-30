@@ -142,50 +142,50 @@ RUN wget https://github.com/alexdobin/STAR/releases/download/2.7.11b/STAR_2.7.11
     cp STAR_2.7.11b/Linux_x86_64/STAR* /usr/local/bin/ && \
     rm -rf STAR_2.7.11b*
 
-# Install QualiMap (resilient)
-RUN set -eux; \
-    curl -fSL --retry 5 --retry-connrefused --retry-delay 3 \
-    -o qualimap_v2.3.zip \
-    https://bitbucket.org/kokonech/qualimap/downloads/qualimap_v2.3.zip \
-    || curl -fSL --retry 5 --retry-connrefused --retry-delay 3 \
-    -o qualimap_v2.3.zip \
-    http://qualimap.conesalab.org/qualimap_v2.3.zip; \
-    unzip -q qualimap_v2.3.zip; \
-    mv qualimap_v2.3 /opt/qualimap; \
-    printf '%s\n' '#!/bin/bash' 'exec java -Xms32m -Xmx2g -jar /opt/qualimap/qualimap.jar "$@"' > /usr/local/bin/qualimap; \
-    chmod +x /usr/local/bin/qualimap; \
-    rm -f qualimap_v2.3.zip
+# # Install QualiMap (resilient)
+# RUN set -eux; \
+#     curl -fSL --retry 5 --retry-connrefused --retry-delay 3 \
+#     -o qualimap_v2.3.zip \
+#     https://bitbucket.org/kokonech/qualimap/downloads/qualimap_v2.3.zip \
+#     || curl -fSL --retry 5 --retry-connrefused --retry-delay 3 \
+#     -o qualimap_v2.3.zip \
+#     http://qualimap.conesalab.org/qualimap_v2.3.zip; \
+#     unzip -q qualimap_v2.3.zip; \
+#     mv qualimap_v2.3 /opt/qualimap; \
+#     printf '%s\n' '#!/bin/bash' 'exec java -Xms32m -Xmx2g -jar /opt/qualimap/qualimap.jar "$@"' > /usr/local/bin/qualimap; \
+#     chmod +x /usr/local/bin/qualimap; \
+#     rm -f qualimap_v2.3.zip
 
 #create a symlink for python as hisat2 hashbangs are set for python and not python3
 RUN ln -s /usr/bin/python3 /usr/bin/python 
 
 # install R packages
-# RUN Rscript -e 'install.packages("BiocManager", repos = "https://cloud.r-project.org")' \
-#     && Rscript -e 'BiocManager::install("limma")' \
-#     && Rscript -e 'BiocManager::install("edgeR")' \
-#     && Rscript -e 'BiocManager::install("DESeq2")' \
-#     && Rscript -e 'install.packages("beeswarm")' \
-#     && Rscript -e 'install.packages("knitr")' \
-#     && Rscript -e 'install.packages("gplots")' \
-#     && Rscript -e 'BiocManager::install("goseq")' \
-#     && Rscript -e 'BiocManager::install("GO.db")' \
-#     && Rscript -e 'BiocManager::install("org.Sc.sgd.db")' \
-#     && Rscript -e 'install.packages("ggiraph")' \
-#     && Rscript -e 'install.packages("plotly")'
+RUN Rscript -e 'install.packages("BiocManager", repos = "https://cloud.r-project.org")' \
+    && Rscript -e 'BiocManager::install("limma")' \
+    && Rscript -e 'BiocManager::install("edgeR")' \
+    && Rscript -e 'BiocManager::install("DESeq2")' \
+    && Rscript -e 'install.packages("beeswarm")' \
+    && Rscript -e 'install.packages("knitr")' \
+    && Rscript -e 'install.packages("gplots")' \
+    && Rscript -e 'BiocManager::install("goseq")' \
+    && Rscript -e 'BiocManager::install("GO.db")' \
+    && Rscript -e 'BiocManager::install("org.Sc.sgd.db")' \
+    && Rscript -e 'install.packages("ggiraph")' \
+    && Rscript -e 'install.packages("plotly")'
 
-# # confirm all R packages load
-# RUN Rscript -e 'library(BiocManager)' \
-#     && Rscript -e 'library(limma)' \
-#     && Rscript -e 'library(edgeR)' \
-#     && Rscript -e 'library(DESeq2)' \
-#     && Rscript -e 'library(beeswarm)' \
-#     && Rscript -e 'library(knitr)' \
-#     && Rscript -e 'library(gplots)' \
-#     && Rscript -e 'library(goseq)' \
-#     && Rscript -e 'library(GO.db)' \
-#     && Rscript -e 'library(org.Sc.sgd.db)' \
-#     && Rscript -e 'library(ggiraph)' \
-#     && Rscript -e 'library(plotly)'
+# confirm all R packages load
+RUN Rscript -e 'library(BiocManager)' \
+    && Rscript -e 'library(limma)' \
+    && Rscript -e 'library(edgeR)' \
+    && Rscript -e 'library(DESeq2)' \
+    && Rscript -e 'library(beeswarm)' \
+    && Rscript -e 'library(knitr)' \
+    && Rscript -e 'library(gplots)' \
+    && Rscript -e 'library(goseq)' \
+    && Rscript -e 'library(GO.db)' \
+    && Rscript -e 'library(org.Sc.sgd.db)' \
+    && Rscript -e 'library(ggiraph)' \
+    && Rscript -e 'library(plotly)'
 
 # Set up environment variables for the virtual environment
 ENV PATH="/opt/venv/bin:$PATH"
