@@ -40,33 +40,33 @@ RUN git clone https://github.com/nesi/training-environment-k8s-utils.git /opt/oo
 RUN echo "#!/bin/bash" > /bin/module \
     && chmod +x /bin/module
 
-# install R packages
-RUN Rscript -e 'install.packages("BiocManager", repos = "https://cloud.r-project.org")' \
-    && Rscript -e 'BiocManager::install("limma")' \
-    && Rscript -e 'BiocManager::install("edgeR")' \
-    && Rscript -e 'BiocManager::install("DESeq2")' \
-    && Rscript -e 'install.packages("beeswarm")' \
-    && Rscript -e 'install.packages("knitr")' \
-    && Rscript -e 'install.packages("gplots")' \
-    && Rscript -e 'BiocManager::install("goseq")' \
-    && Rscript -e 'BiocManager::install("GO.db")' \
-    && Rscript -e 'BiocManager::install("org.Sc.sgd.db")' \
-    && Rscript -e 'install.packages("ggiraph")' \
-    && Rscript -e 'install.packages("plotly")'
+# # install R packages
+# RUN Rscript -e 'install.packages("BiocManager", repos = "https://cloud.r-project.org")' \
+#     && Rscript -e 'BiocManager::install("limma")' \
+#     && Rscript -e 'BiocManager::install("edgeR")' \
+#     && Rscript -e 'BiocManager::install("DESeq2")' \
+#     && Rscript -e 'install.packages("beeswarm")' \
+#     && Rscript -e 'install.packages("knitr")' \
+#     && Rscript -e 'install.packages("gplots")' \
+#     && Rscript -e 'BiocManager::install("goseq")' \
+#     && Rscript -e 'BiocManager::install("GO.db")' \
+#     && Rscript -e 'BiocManager::install("org.Sc.sgd.db")' \
+#     && Rscript -e 'install.packages("ggiraph")' \
+#     && Rscript -e 'install.packages("plotly")'
 
-# confirm all R packages load
-RUN Rscript -e 'library(BiocManager)' \
-    && Rscript -e 'library(limma)' \
-    && Rscript -e 'library(edgeR)' \
-    && Rscript -e 'library(DESeq2)' \
-    && Rscript -e 'library(beeswarm)' \
-    && Rscript -e 'library(knitr)' \
-    && Rscript -e 'library(gplots)' \
-    && Rscript -e 'library(goseq)' \
-    && Rscript -e 'library(GO.db)' \
-    && Rscript -e 'library(org.Sc.sgd.db)' \
-    && Rscript -e 'library(ggiraph)' \
-    && Rscript -e 'library(plotly)'
+# # confirm all R packages load
+# RUN Rscript -e 'library(BiocManager)' \
+#     && Rscript -e 'library(limma)' \
+#     && Rscript -e 'library(edgeR)' \
+#     && Rscript -e 'library(DESeq2)' \
+#     && Rscript -e 'library(beeswarm)' \
+#     && Rscript -e 'library(knitr)' \
+#     && Rscript -e 'library(gplots)' \
+#     && Rscript -e 'library(goseq)' \
+#     && Rscript -e 'library(GO.db)' \
+#     && Rscript -e 'library(org.Sc.sgd.db)' \
+#     && Rscript -e 'library(ggiraph)' \
+#     && Rscript -e 'library(plotly)'
 
 # OG RNAseq stuff
 # # install system dependencies

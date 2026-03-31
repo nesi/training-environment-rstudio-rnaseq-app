@@ -9,10 +9,10 @@ export RSTUDIO_AUTH="$WORKING_DIR/bin/auth"
 
 export PATH="$PATH:/usr/lib/rstudio-server/bin"
 
-# RStudioServer doesn't inherit "ulimit -s" from system config /etc/security/limits.d/custom.conf
-# Therefore, we are setting it here
+# # RStudioServer doesn't inherit "ulimit -s" from system config /etc/security/limits.d/custom.conf
+# # Therefore, we are setting it here
 
-ulimit -s unlimited
+# ulimit -s unlimited
 
 # Generate an `rsession` wrapper script
 export RSESSION_WRAPPER_FILE="$WORKING_DIR/rsession.sh"
@@ -31,10 +31,10 @@ sed 's/^ \{2\}//' > "$WORKING_DIR/rsession.sh" << EOL
   export TZ="Pacific/Auckland"
   export PATH="/usr/local/bin:$PATH"
 
-  #This is to resolve issue : https://github.com/nesi/nesi-ood-rstudio-server-app/issues/13
-  if [ ! -f ~/.inputrc ] || ! grep -qF 'set enable-bracketed-paste off' ~/.inputrc; then
-      echo 'set enable-bracketed-paste off' >> ~/.inputrc
-  fi
+  # #This is to resolve issue : https://github.com/nesi/nesi-ood-rstudio-server-app/issues/13
+  # if [ ! -f ~/.inputrc ] || ! grep -qF 'set enable-bracketed-paste off' ~/.inputrc; then
+  #     echo 'set enable-bracketed-paste off' >> ~/.inputrc
+  # fi
 
   # Launch the original command
   echo "Launching rsession..."
