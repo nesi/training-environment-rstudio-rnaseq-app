@@ -70,23 +70,23 @@ RUN git clone https://github.com/nesi/training-environment-k8s-utils.git /opt/oo
 RUN echo "#!/bin/bash" > /bin/module \
     && chmod +x /bin/module
 
-# Install Python-based tools in a virtual environment
-RUN python3 -m venv /opt/venv && \
-    /opt/venv/bin/pip install --upgrade pip && \
-    /opt/venv/bin/pip install \
-    multiqc \
-    cutadapt && \
-    # Create symlinks to the venv binaries
-    ln -s /opt/venv/bin/multiqc /usr/local/bin/ && \
-    ln -s /opt/venv/bin/cutadapt /usr/local/bin/
+# # Install Python-based tools in a virtual environment
+# RUN python3 -m venv /opt/venv && \
+#     /opt/venv/bin/pip install --upgrade pip && \
+#     /opt/venv/bin/pip install \
+#     multiqc \
+#     cutadapt && \
+#     # Create symlinks to the venv binaries
+#     ln -s /opt/venv/bin/multiqc /usr/local/bin/ && \
+#     ln -s /opt/venv/bin/cutadapt /usr/local/bin/
 
-# Install FastQC
-RUN wget https://www.bioinformatics.babraham.ac.uk/projects/fastqc/fastqc_v0.12.1.zip && \
-    unzip fastqc_v0.12.1.zip && \
-    mv FastQC /opt/ && \
-    chmod +x /opt/FastQC/fastqc && \
-    ln -s /opt/FastQC/fastqc /usr/local/bin/fastqc && \
-    rm fastqc_v0.12.1.zip
+# # Install FastQC
+# RUN wget https://www.bioinformatics.babraham.ac.uk/projects/fastqc/fastqc_v0.12.1.zip && \
+#     unzip fastqc_v0.12.1.zip && \
+#     mv FastQC /opt/ && \
+#     chmod +x /opt/FastQC/fastqc && \
+#     ln -s /opt/FastQC/fastqc /usr/local/bin/fastqc && \
+#     rm fastqc_v0.12.1.zip
 
 # install R packages
 RUN Rscript -e 'install.packages("BiocManager", repos = "https://cloud.r-project.org")' \
