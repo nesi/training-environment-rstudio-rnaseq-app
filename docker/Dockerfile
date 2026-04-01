@@ -80,6 +80,14 @@ RUN python3 -m venv /opt/venv && \
     ln -s /opt/venv/bin/multiqc /usr/local/bin/ && \
     ln -s /opt/venv/bin/cutadapt /usr/local/bin/
 
+# Install FastQC
+RUN wget https://www.bioinformatics.babraham.ac.uk/projects/fastqc/fastqc_v0.12.1.zip && \
+    unzip fastqc_v0.12.1.zip && \
+    mv FastQC /opt/ && \
+    chmod +x /opt/FastQC/fastqc && \
+    ln -s /opt/FastQC/fastqc /usr/local/bin/fastqc && \
+    rm fastqc_v0.12.1.zip
+
 # install R packages
 RUN Rscript -e 'install.packages("BiocManager", repos = "https://cloud.r-project.org")' \
     && Rscript -e 'BiocManager::install("limma")' \
@@ -107,6 +115,9 @@ RUN Rscript -e 'library(BiocManager)' \
     && Rscript -e 'library(org.Sc.sgd.db)' \
     && Rscript -e 'library(ggiraph)' \
     && Rscript -e 'library(plotly)'
+
+# Set up environment variables for the virtual environment
+ENV PATH="/opt/venv/bin:$PATH"
 
 # copy data
 COPY docker/RNA_seq/ /var/lib/RNA_seq/
