@@ -41,26 +41,32 @@ RUN echo "#!/bin/bash" > /bin/module \
     && chmod +x /bin/module
 
 # install R packages
-RUN Rscript -e 'install.packages("vegan")' \
-    && Rscript -e 'install.packages("palmerpenguins")' \
-    && Rscript -e 'remotes::install_github("G-Thomson/Manu")' \
-    && Rscript -e 'install.packages("viridis")' \
-    && Rscript -e 'install.packages("ggbeeswarm")' \
-    && Rscript -e 'install.packages("ggtext")' \
-    && Rscript -e 'install.packages("ggridges")'
+RUN Rscript -e 'install.packages("BiocManager", repos = "https://cloud.r-project.org")' \
+    && Rscript -e 'BiocManager::install("limma")' \
+    && Rscript -e 'BiocManager::install("edgeR")' \
+    && Rscript -e 'BiocManager::install("DESeq2")' \
+    && Rscript -e 'install.packages("beeswarm")' \
+    && Rscript -e 'install.packages("knitr")' \
+    && Rscript -e 'install.packages("gplots")' \
+    && Rscript -e 'BiocManager::install("goseq")' \
+    && Rscript -e 'BiocManager::install("GO.db")' \
+    && Rscript -e 'BiocManager::install("org.Sc.sgd.db")' \
+    && Rscript -e 'install.packages("ggiraph")' \
+    && Rscript -e 'install.packages("plotly")'
 
-# test loading R packages
-RUN Rscript -e 'library(vegan)' \
-    && Rscript -e 'library(palmerpenguins)' \
-    && Rscript -e 'library(Manu)' \
-    && Rscript -e 'library(viridis)' \
-    && Rscript -e 'library(ggbeeswarm)' \
-    && Rscript -e 'library(ggtext)' \
-    && Rscript -e 'library(ggridges)'
+# confirm all R packages load
+RUN Rscript -e 'library(BiocManager)' \
+    && Rscript -e 'library(limma)' \
+    && Rscript -e 'library(edgeR)' \
+    && Rscript -e 'library(DESeq2)' \
+    && Rscript -e 'library(beeswarm)' \
+    && Rscript -e 'library(knitr)' \
+    && Rscript -e 'library(gplots)' \
+    && Rscript -e 'library(goseq)' \
+    && Rscript -e 'library(GO.db)' \
+    && Rscript -e 'library(org.Sc.sgd.db)' \
+    && Rscript -e 'library(ggiraph)' \
+    && Rscript -e 'library(plotly)'
 
-# copy the introduction to R source into the repo
-ARG INTROR_HASH=0729df3d1877356c120612586ca541cf8da17b0e
-RUN git clone https://github.com/GenomicsAotearoa/Introduction-to-R /opt/Introduction-to-R \
-    && cd /opt/Introduction-to-R \
-    && git checkout $INTROR_HASH \
-    && rm -rf /opt/Introduction-to-R/.git
+# copy data
+COPY docker/RNA_seq/ /var/lib/RNA_seq/
