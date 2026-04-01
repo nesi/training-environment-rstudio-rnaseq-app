@@ -48,6 +48,9 @@ RUN apt-get update && \
     zlib1g-dev \
     && rm -rf /var/lib/apt/lists/*
 
+# Make sure RStudio uses the correct R version
+RUN echo "rsession-which-r=/usr/local/bin/R" > /etc/rstudio/rserver.conf
+
 # install kubectl, required for running on the k8s cluster
 ARG KUBECTL_VERSION=v1.28.5
 RUN curl -LO https://dl.k8s.io/release/$KUBECTL_VERSION/bin/linux/amd64/kubectl \
@@ -66,6 +69,16 @@ RUN git clone https://github.com/nesi/training-environment-k8s-utils.git /opt/oo
 # make a dummy module command to avoid warnings from ondemand job_script_content.sh
 RUN echo "#!/bin/bash" > /bin/module \
     && chmod +x /bin/module
+
+# Install Python-based tools in a virtual environment
+RUN python3 -m venv /opt/venv && \
+    /opt/venv/bin/pip install --upgrade pip && \
+    /opt/venv/bin/pip install \
+    multiqc \
+    cutadapt && \
+    # Create symlinks to the venv binaries
+    ln -s /opt/venv/bin/multiqc /usr/local/bin/ && \
+    ln -s /opt/venv/bin/cutadapt /usr/local/bin/
 
 # install R packages
 RUN Rscript -e 'install.packages("BiocManager", repos = "https://cloud.r-project.org")' \
