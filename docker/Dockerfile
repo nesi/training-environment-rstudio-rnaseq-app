@@ -1,24 +1,51 @@
 FROM rocker/geospatial:4.5.2
 
-# install packages, some of these are required to make the container behave like ldap client
+# install system dependencies
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
-        curl \
-        dnsutils \
-        git \
-        jq \
-        ldap-utils \
-        libnss-ldapd \
-        libpam-ldapd \
-        less \
-        nano \
-        nodejs \
-        nscd \
-        nslcd \
-        rsync \
-        unzip \
-        vim \
-        wget \
-        zip \
+    curl \
+    dnsutils \
+    git \
+    jq \
+    ldap-utils \
+    libnss-ldapd \
+    libpam-ldapd \
+    less \
+    nano \
+    nodejs \
+    nscd \
+    nslcd \
+    rsync \
+    unzip \
+    vim \
+    wget \
+    zip \
+    python3 \
+    python3-pip \
+    python3-venv \
+    python3-dev \
+    build-essential \
+    zlib1g-dev \
+    libncurses5-dev \
+    libncursesw5-dev \
+    libbz2-dev \
+    liblzma-dev \
+    libcurl4-openssl-dev \
+    libssl-dev \
+    default-jre \
+    && rm -rf /var/lib/apt/lists/*
+
+
+# Following libraries are to supplement some of the requirements by more recent R graphics libs
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    libfreetype6-dev \
+    libpng-dev \
+    libtiff5-dev \
+    libjpeg-dev \
+    libfontconfig1-dev \
+    libharfbuzz-dev \
+    libfribidi-dev \
+    zlib1g-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # install kubectl, required for running on the k8s cluster
