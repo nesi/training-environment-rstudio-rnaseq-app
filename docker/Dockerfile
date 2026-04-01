@@ -70,15 +70,15 @@ RUN git clone https://github.com/nesi/training-environment-k8s-utils.git /opt/oo
 RUN echo "#!/bin/bash" > /bin/module \
     && chmod +x /bin/module
 
-# # Install Python-based tools in a virtual environment
-# RUN python3 -m venv /opt/venv && \
-#     /opt/venv/bin/pip install --upgrade pip && \
-#     /opt/venv/bin/pip install \
-#     multiqc \
-#     cutadapt && \
-#     # Create symlinks to the venv binaries
-#     ln -s /opt/venv/bin/multiqc /usr/local/bin/ && \
-#     ln -s /opt/venv/bin/cutadapt /usr/local/bin/
+# Install Python-based tools in a virtual environment
+RUN python3 -m venv /opt/venv && \
+    /opt/venv/bin/pip install --upgrade pip && \
+    /opt/venv/bin/pip install \
+    multiqc \
+    cutadapt && \
+    # Create symlinks to the venv binaries
+    ln -s /opt/venv/bin/multiqc /usr/local/bin/ && \
+    ln -s /opt/venv/bin/cutadapt /usr/local/bin/
 
 # # Install FastQC
 # RUN wget https://www.bioinformatics.babraham.ac.uk/projects/fastqc/fastqc_v0.12.1.zip && \
