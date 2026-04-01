@@ -1,7 +1,7 @@
 FROM rocker/geospatial:4.5.2
 
 # install system dependencies
-RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
+RUN apt update && DEBIAN_FRONTEND=noninteractive apt install -y \
     curl \
     dnsutils \
     git \
@@ -36,8 +36,8 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
 
 
 # Following libraries are to supplement some of the requirements by more recent R graphics libs
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
+RUN apt update && \
+    apt install -y --no-install-recommends \
     libfreetype6-dev \
     libpng-dev \
     libtiff5-dev \
