@@ -117,22 +117,21 @@ RUN wget https://cloud.biohpc.swmed.edu/index.php/s/fE9QCsX3NH4QwBi/download -O 
 RUN wget https://sourceforge.net/projects/subread/files/subread-2.0.3/subread-2.0.3-Linux-x86_64.tar.gz/download -O subread-2.0.3-Linux-x86_64.tar.gz && \
     tar -xzf subread-2.0.3-Linux-x86_64.tar.gz && \
     cp -r subread-2.0.3-Linux-x86_64/bin/* /usr/local/bin/ && \
-    rm -rf subread-2.0.3* && \
-    featureCounts -h
+    rm -rf subread-2.0.3*
 
-# # Install bamtools
-# RUN apt-get update && apt-get install -y cmake && \
-#     git clone https://github.com/pezmaster31/bamtools.git && \
-#     cd bamtools && \
-#     mkdir build && \
-#     cd build && \
-#     cmake -DCMAKE_INSTALL_PREFIX=/usr/local .. && \
-#     make && \
-#     make install && \
-#     cd ../.. && \
-#     rm -rf bamtools && \
-#     apt-get clean && rm -rf /var/lib/apt/lists/* && \
-#     bamtools --version
+# Install bamtools
+RUN apt-get update && apt-get install -y cmake && \
+    git clone https://github.com/pezmaster31/bamtools.git && \
+    cd bamtools && \
+    mkdir build && \
+    cd build && \
+    cmake -DCMAKE_INSTALL_PREFIX=/usr/local .. && \
+    make && \
+    make install && \
+    cd ../.. && \
+    rm -rf bamtools && \
+    apt-get clean && rm -rf /var/lib/apt/lists/* && \
+    bamtools --version
 
 # # Install salmon
 # RUN wget https://github.com/COMBINE-lab/salmon/releases/download/v1.10.0/salmon-1.10.0_linux_x86_64.tar.gz && \
