@@ -14,6 +14,7 @@ script:
     container:
       name: "rnaseq"
       image: "ghcr.io/nesi/training-environment-rstudio-rnaseq-app:jen"
+      image_pull_policy: Always
       command: ["/bin/bash","-l","<%= staged_root %>/job_script_content.sh"]
       restart_policy: 'OnFailure'
       env:

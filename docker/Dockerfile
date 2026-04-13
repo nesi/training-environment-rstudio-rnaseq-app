@@ -88,6 +88,26 @@ RUN wget https://www.bioinformatics.babraham.ac.uk/projects/fastqc/fastqc_v0.12.
     ln -s /opt/FastQC/fastqc /usr/local/bin/fastqc && \
     rm fastqc_v0.12.1.zip
 
+# Install samtools
+RUN wget https://github.com/samtools/samtools/releases/download/1.18/samtools-1.18.tar.bz2 && \
+    tar -xjf samtools-1.18.tar.bz2 && \
+    cd samtools-1.18 && \
+    ./configure --prefix=/usr/local && \
+    make && \
+    make install && \
+    cd .. && \
+    rm -rf samtools-1.18*
+
+# Install hisat2
+RUN wget https://cloud.biohpc.swmed.edu/index.php/s/fE9QCsX3NH4QwBi/download -O hisat2-2.2.1-Linux_x86_64.zip && \
+    unzip hisat2-2.2.1-Linux_x86_64.zip && \
+    cd hisat2-2.2.1/ && \
+    make && \
+    cd .. && \
+    mv hisat2-2.2.1/hisat2* /usr/local/bin/ && \
+    mv hisat2-2.2.1/extract_exons* /usr/local/bin/ && \
+    rm -rf hisat2-2.2.1*
+
 # install R packages
 RUN Rscript -e 'install.packages("BiocManager", repos = "https://cloud.r-project.org")' \
     && Rscript -e 'BiocManager::install("limma")' \
