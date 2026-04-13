@@ -108,6 +108,39 @@ RUN wget https://cloud.biohpc.swmed.edu/index.php/s/fE9QCsX3NH4QwBi/download -O 
     mv hisat2-2.2.1/extract_exons* /usr/local/bin/ && \
     rm -rf hisat2-2.2.1*
 
+# Install subread
+RUN wget https://sourceforge.net/projects/subread/files/subread-2.0.3/subread-2.0.3-Linux-x86_64.tar.gz/download -O subread-2.0.3-Linux-x86_64.tar.gz && \
+    tar -xzf subread-2.0.3-Linux-x86_64.tar.gz && \
+    cp -r subread-2.0.3-Linux-x86_64/bin/* /usr/local/bin/ && \
+    rm -rf subread-2.0.3*
+
+# Install bamtools
+RUN apt-get update && apt-get install -y cmake && \
+    git clone https://github.com/pezmaster31/bamtools.git && \
+    cd bamtools && \
+    mkdir build && \
+    cd build && \
+    cmake -DCMAKE_INSTALL_PREFIX=/usr/local .. && \
+    make && \
+    make install && \
+    cd ../.. && \
+    rm -rf bamtools && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Install salmon
+RUN wget https://github.com/COMBINE-lab/salmon/releases/download/v1.10.0/salmon-1.10.0_linux_x86_64.tar.gz && \
+    tar -xzf salmon-1.10.0_linux_x86_64.tar.gz  && \
+    cp -r salmon-latest_linux_x86_64/bin/* /usr/local/bin/ && \
+    cp -r salmon-latest_linux_x86_64/lib/* /usr/local/lib/ && \
+    rm -rf salmon-1.10.1*
+
+
+# Install STAR with required dependencies
+RUN wget https://github.com/alexdobin/STAR/releases/download/2.7.11b/STAR_2.7.11b.zip && \
+    unzip STAR_2.7.11b.zip && \
+    cp STAR_2.7.11b/Linux_x86_64/STAR* /usr/local/bin/ && \
+    rm -rf STAR_2.7.11b*
+
 # install R packages
 RUN Rscript -e 'install.packages("BiocManager", repos = "https://cloud.r-project.org")' \
     && Rscript -e 'BiocManager::install("limma")' \
