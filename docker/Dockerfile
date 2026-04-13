@@ -113,12 +113,12 @@ RUN wget https://cloud.biohpc.swmed.edu/index.php/s/fE9QCsX3NH4QwBi/download -O 
     rm -rf hisat2-2.2.1* && \
     hisat2 --version
 
-# Install subread
+# Install subread - for featureCounts
 RUN wget https://sourceforge.net/projects/subread/files/subread-2.0.3/subread-2.0.3-Linux-x86_64.tar.gz/download -O subread-2.0.3-Linux-x86_64.tar.gz && \
     tar -xzf subread-2.0.3-Linux-x86_64.tar.gz && \
     cp -r subread-2.0.3-Linux-x86_64/bin/* /usr/local/bin/ && \
     rm -rf subread-2.0.3* && \
-    subread --version
+    featureCounts --version
 
 # # Install bamtools
 # RUN apt-get update && apt-get install -y cmake && \
