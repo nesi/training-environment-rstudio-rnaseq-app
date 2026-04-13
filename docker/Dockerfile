@@ -133,13 +133,13 @@ RUN apt-get update && apt-get install -y cmake && \
     apt-get clean && rm -rf /var/lib/apt/lists/* && \
     bamtools --version
 
-# # Install salmon
-# RUN wget https://github.com/COMBINE-lab/salmon/releases/download/v1.10.0/salmon-1.10.0_linux_x86_64.tar.gz && \
-#     tar -xzf salmon-1.10.0_linux_x86_64.tar.gz  && \
-#     cp -r salmon-latest_linux_x86_64/bin/* /usr/local/bin/ && \
-#     cp -r salmon-latest_linux_x86_64/lib/* /usr/local/lib/ && \
-#     rm -rf salmon-1.10.1* && \
-#     salmon --version
+# Install salmon
+RUN wget https://github.com/COMBINE-lab/salmon/releases/download/v1.10.0/salmon-1.10.0_linux_x86_64.tar.gz && \
+    tar -xzf salmon-1.10.0_linux_x86_64.tar.gz  && \
+    cp -r salmon-latest_linux_x86_64/bin/* /usr/local/bin/ && \
+    cp -r salmon-latest_linux_x86_64/lib/* /usr/local/lib/ && \
+    rm -rf salmon-1.10.1* && \
+    salmon --version
 
 
 # # Install STAR with required dependencies
