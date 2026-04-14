@@ -140,6 +140,11 @@ RUN wget https://github.com/alexdobin/STAR/releases/download/2.7.11b/STAR_2.7.11
     rm -rf STAR_2.7.11b* && \
     STAR --version
 
+# Install fastp with required dependencies
+RUN wget http://opengene.org/fastp/fastp.1.3.2 && \
+    mv fastp.1.3.2 /usr/local/bin/fastp && \
+    fastp --version
+
 # install R packages
 RUN Rscript -e 'install.packages("BiocManager", repos = "https://cloud.r-project.org")' \
     && Rscript -e 'BiocManager::install("limma")' \
