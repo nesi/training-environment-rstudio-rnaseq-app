@@ -1,43 +1,43 @@
-FROM rocker/geospatial:latest
+FROM rocker/geospatial:4.5.2
 
 # install system dependencies
-RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
-        curl \
-        dnsutils \
-        git \
-        jq \
-        ldap-utils \
-        libnss-ldapd \
-        libpam-ldapd \
-        less \
-        nano \
-        nodejs \
-        nscd \
-        nslcd \
-        rsync \
-        unzip \
-        vim \
-        wget \
-        zip \
-        python3 \
-        python3-pip \
-        python3-venv \
-        python3-dev \
-        build-essential \
-        zlib1g-dev \
-        libncurses5-dev \
-        libncursesw5-dev \
-        libbz2-dev \
-        liblzma-dev \
-        libcurl4-openssl-dev \
-        libssl-dev \
-        default-jre \
+RUN apt update && DEBIAN_FRONTEND=noninteractive apt install -y \
+    curl \
+    dnsutils \
+    git \
+    jq \
+    ldap-utils \
+    libnss-ldapd \
+    libpam-ldapd \
+    less \
+    nano \
+    nodejs \
+    nscd \
+    nslcd \
+    rsync \
+    unzip \
+    vim \
+    wget \
+    zip \
+    python3 \
+    python3-pip \
+    python3-venv \
+    python3-dev \
+    build-essential \
+    zlib1g-dev \
+    libncurses5-dev \
+    libncursesw5-dev \
+    libbz2-dev \
+    liblzma-dev \
+    libcurl4-openssl-dev \
+    libssl-dev \
+    default-jre \
     && rm -rf /var/lib/apt/lists/*
 
 
 # Following libraries are to supplement some of the requirements by more recent R graphics libs
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
+RUN apt update && \
+    apt install -y --no-install-recommends \
     libfreetype6-dev \
     libpng-dev \
     libtiff5-dev \
@@ -47,7 +47,6 @@ RUN apt-get update && \
     libfribidi-dev \
     zlib1g-dev \
     && rm -rf /var/lib/apt/lists/*
-
 
 # Make sure RStudio uses the correct R version
 RUN echo "rsession-which-r=/usr/local/bin/R" > /etc/rstudio/rserver.conf
@@ -79,7 +78,9 @@ RUN python3 -m venv /opt/venv && \
     cutadapt && \
     # Create symlinks to the venv binaries
     ln -s /opt/venv/bin/multiqc /usr/local/bin/ && \
-    ln -s /opt/venv/bin/cutadapt /usr/local/bin/
+    ln -s /opt/venv/bin/cutadapt /usr/local/bin/ && \
+    multiqc --version && \
+    cutadapt --version
 
 # Install FastQC
 RUN wget https://www.bioinformatics.babraham.ac.uk/projects/fastqc/fastqc_v0.12.1.zip && \
@@ -87,7 +88,8 @@ RUN wget https://www.bioinformatics.babraham.ac.uk/projects/fastqc/fastqc_v0.12.
     mv FastQC /opt/ && \
     chmod +x /opt/FastQC/fastqc && \
     ln -s /opt/FastQC/fastqc /usr/local/bin/fastqc && \
-    rm fastqc_v0.12.1.zip
+    rm fastqc_v0.12.1.zip && \
+    fastqc --version
 
 # Install samtools
 RUN wget https://github.com/samtools/samtools/releases/download/1.18/samtools-1.18.tar.bz2 && \
@@ -97,7 +99,8 @@ RUN wget https://github.com/samtools/samtools/releases/download/1.18/samtools-1.
     make && \
     make install && \
     cd .. && \
-    rm -rf samtools-1.18*
+    rm -rf samtools-1.18* && \
+    samtools --version
 
 # Install hisat2
 RUN wget https://cloud.biohpc.swmed.edu/index.php/s/fE9QCsX3NH4QwBi/download -O hisat2-2.2.1-Linux_x86_64.zip && \
@@ -107,9 +110,10 @@ RUN wget https://cloud.biohpc.swmed.edu/index.php/s/fE9QCsX3NH4QwBi/download -O 
     cd .. && \
     mv hisat2-2.2.1/hisat2* /usr/local/bin/ && \
     mv hisat2-2.2.1/extract_exons* /usr/local/bin/ && \
-    rm -rf hisat2-2.2.1*
+    rm -rf hisat2-2.2.1* && \
+    hisat2 --version
 
-# Install subread
+# Install subread - for featureCounts
 RUN wget https://sourceforge.net/projects/subread/files/subread-2.0.3/subread-2.0.3-Linux-x86_64.tar.gz/download -O subread-2.0.3-Linux-x86_64.tar.gz && \
     tar -xzf subread-2.0.3-Linux-x86_64.tar.gz && \
     cp -r subread-2.0.3-Linux-x86_64/bin/* /usr/local/bin/ && \
@@ -126,38 +130,21 @@ RUN apt-get update && apt-get install -y cmake && \
     make install && \
     cd ../.. && \
     rm -rf bamtools && \
-    apt-get clean && rm -rf /var/lib/apt/lists/*
-
-# Install salmon
-RUN wget https://github.com/COMBINE-lab/salmon/releases/download/v1.10.0/salmon-1.10.0_linux_x86_64.tar.gz && \
-    tar -xzf salmon-1.10.0_linux_x86_64.tar.gz  && \
-    cp -r salmon-latest_linux_x86_64/bin/* /usr/local/bin/ && \
-    cp -r salmon-latest_linux_x86_64/lib/* /usr/local/lib/ && \
-    rm -rf salmon-1.10.1*
-
+    apt-get clean && rm -rf /var/lib/apt/lists/* && \
+    bamtools --version
 
 # Install STAR with required dependencies
 RUN wget https://github.com/alexdobin/STAR/releases/download/2.7.11b/STAR_2.7.11b.zip && \
     unzip STAR_2.7.11b.zip && \
     cp STAR_2.7.11b/Linux_x86_64/STAR* /usr/local/bin/ && \
-    rm -rf STAR_2.7.11b*
+    rm -rf STAR_2.7.11b* && \
+    STAR --version
 
-# Install QualiMap (resilient)
-RUN set -eux; \
-    curl -fSL --retry 5 --retry-connrefused --retry-delay 3 \
-      -o qualimap_v2.3.zip \
-      https://bitbucket.org/kokonech/qualimap/downloads/qualimap_v2.3.zip \
-    || curl -fSL --retry 5 --retry-connrefused --retry-delay 3 \
-      -o qualimap_v2.3.zip \
-      http://qualimap.conesalab.org/qualimap_v2.3.zip; \
-    unzip -q qualimap_v2.3.zip; \
-    mv qualimap_v2.3 /opt/qualimap; \
-    printf '%s\n' '#!/bin/bash' 'exec java -Xms32m -Xmx2g -jar /opt/qualimap/qualimap.jar "$@"' > /usr/local/bin/qualimap; \
-    chmod +x /usr/local/bin/qualimap; \
-    rm -f qualimap_v2.3.zip
-
-#create a symlink for python as hisat2 hashbangs are set for python and not python3
-RUN ln -s /usr/bin/python3 /usr/bin/python 
+# Install fastp with required dependencies
+RUN wget http://opengene.org/fastp/fastp.1.3.2 && \
+    chmod a+x fastp.1.3.2 && \
+    mv fastp.1.3.2 /usr/local/bin/fastp && \
+    fastp --version
 
 # install R packages
 RUN Rscript -e 'install.packages("BiocManager", repos = "https://cloud.r-project.org")' \
@@ -172,6 +159,20 @@ RUN Rscript -e 'install.packages("BiocManager", repos = "https://cloud.r-project
     && Rscript -e 'BiocManager::install("org.Sc.sgd.db")' \
     && Rscript -e 'install.packages("ggiraph")' \
     && Rscript -e 'install.packages("plotly")'
+
+# confirm all R packages load
+RUN Rscript -e 'library(BiocManager)' \
+    && Rscript -e 'library(limma)' \
+    && Rscript -e 'library(edgeR)' \
+    && Rscript -e 'library(DESeq2)' \
+    && Rscript -e 'library(beeswarm)' \
+    && Rscript -e 'library(knitr)' \
+    && Rscript -e 'library(gplots)' \
+    && Rscript -e 'library(goseq)' \
+    && Rscript -e 'library(GO.db)' \
+    && Rscript -e 'library(org.Sc.sgd.db)' \
+    && Rscript -e 'library(ggiraph)' \
+    && Rscript -e 'library(plotly)'
 
 # Set up environment variables for the virtual environment
 ENV PATH="/opt/venv/bin:$PATH"
