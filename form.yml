@@ -2,13 +2,26 @@
 cluster: "my-k8s-cluster"
 
 form:
+  - dataset
   - cpu
   - memory
   - wall_time
 
 attributes:
+  dataset:
+    widget: select
+    label: "Workshop dataset"
+    help: "Copied into ~/RNA_seq. Switching dataset moves the existing ~/RNA_seq aside first."
+    options:
+      - ["NZ spotty wrasse (RNA-seq-data-analysis-workflow-NZ)", "nz"]
+      - ["Yeast (RNA-seq-workshop)", "yeast"]
   cpu: 2
-  memory: 4
+  memory:
+    widget: select
+    label: "Memory (GiB)"
+    options:
+      - ["4", "4"]
+      - ["8", "8"]
   wall_time:
     widget: number_field
     label: "Hours"
