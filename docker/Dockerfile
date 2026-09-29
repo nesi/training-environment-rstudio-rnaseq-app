@@ -42,9 +42,9 @@ RUN curl -fsSL -o /tmp/RNA_seq.zip https://github.com/GenomicsAotearoa/RNA-seq-d
     && rm -rf _STARtmp \
     # the index is large and read-only, so link it rather than copying it into every home dir
     && ln -s /var/lib/rnaseq/nz-genomeindex /var/lib/rnaseq/nz/backup-files/genomeindex \
-    # the lesson code refers to both DataFiles/ and data-files/, and writes to results/ and plots/
-    && ln -s DataFiles /var/lib/rnaseq/nz/data-files \
-    && mkdir -p /var/lib/rnaseq/nz/results /var/lib/rnaseq/nz/plots \
+    # ship the release layout as-is: DataFiles/ only (data-files/ exists in the
+    # upstream repo for working locally), and no results/ or plots/, which
+    # learners create as they go
     && echo nz > /var/lib/rnaseq/nz/.dataset
 
 # Yeast dataset (GenomicsAotearoa/RNA-seq-workshop), bundled in this repo
