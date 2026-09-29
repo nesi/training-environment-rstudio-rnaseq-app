@@ -1,3 +1,58 @@
+# Workshop datasets are prepared in a separate stage so the downloaded zip and
+# STAR build tooling never end up in the final image layers.
+FROM ubuntu:24.04 AS data
+
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+    ca-certificates \
+    curl \
+    unzip \
+    && rm -rf /var/lib/apt/lists/*
+
+# STAR is only used here to rebuild the NZ backup genome index
+ARG STAR_VERSION=2.7.11b
+RUN curl -fsSL -o /tmp/STAR.zip https://github.com/alexdobin/STAR/releases/download/${STAR_VERSION}/STAR_${STAR_VERSION}.zip \
+    && unzip -q /tmp/STAR.zip -d /tmp \
+    && cp /tmp/STAR_${STAR_VERSION}/Linux_x86_64_static/STAR /usr/local/bin/STAR \
+    && rm -rf /tmp/STAR* \
+    && STAR --version
+
+# NZ spotty wrasse dataset (GenomicsAotearoa/RNA-seq-data-analysis-workflow-NZ release asset)
+ARG NZ_DATA_RELEASE=2026-September
+ARG NZ_DATA_SHA256=34a48d817ee23c685db54e3508ce17dfb13a5d36d10a3d4351341f37f0893869
+ARG NZ_GENOME=GCF_009762535.1_fNotCel1.pri_genomic
+RUN curl -fsSL -o /tmp/RNA_seq.zip https://github.com/GenomicsAotearoa/RNA-seq-data-analysis-workflow-NZ/releases/download/${NZ_DATA_RELEASE}/RNA_seq.zip \
+    && echo "${NZ_DATA_SHA256}  /tmp/RNA_seq.zip" | sha256sum -c - \
+    && unzip -q /tmp/RNA_seq.zip -x '__MACOSX/*' -d /tmp/nz \
+    && rm /tmp/RNA_seq.zip \
+    && mkdir -p /var/lib/rnaseq \
+    && mv /tmp/nz/RNA_seq /var/lib/rnaseq/nz \
+    && find /var/lib/rnaseq/nz -name .DS_Store -delete \
+    # the shipped index is built for a full-size genome (SAindex 1.5GB) with sjdbOverhang 100;
+    # rebuild it to match the lesson (125bp reads) and the single-chromosome subset genome
+    && rm -rf /var/lib/rnaseq/nz/backup-files/genomeindex \
+    && mkdir -p /var/lib/rnaseq/nz-genomeindex \
+    && cd /var/lib/rnaseq/nz-genomeindex \
+    && STAR --runMode genomeGenerate \
+        --genomeDir . \
+        --genomeFastaFiles /var/lib/rnaseq/nz/Genome/${NZ_GENOME}.fna \
+        --sjdbGTFfile /var/lib/rnaseq/nz/Genome/${NZ_GENOME}.gtf \
+        --sjdbOverhang 124 \
+        --genomeSAindexNbases 11 \
+        --runThreadN 4 \
+    && rm -rf _STARtmp \
+    # the index is large and read-only, so link it rather than copying it into every home dir
+    && ln -s /var/lib/rnaseq/nz-genomeindex /var/lib/rnaseq/nz/backup-files/genomeindex \
+    # ship the release layout as-is: DataFiles/ only (data-files/ exists in the
+    # upstream repo for working locally), and no results/ or plots/, which
+    # learners create as they go
+    && echo nz > /var/lib/rnaseq/nz/.dataset
+
+# Yeast dataset (GenomicsAotearoa/RNA-seq-workshop), bundled in this repo
+COPY docker/RNA_seq/ /var/lib/rnaseq/yeast/
+RUN echo yeast > /var/lib/rnaseq/yeast/.dataset \
+    && chmod -R u=rwX,go=rX /var/lib/rnaseq
+
+
 FROM rocker/geospatial:4.5.2
 
 # install system dependencies
@@ -146,6 +201,18 @@ RUN wget http://opengene.org/fastp/fastp.1.3.2 && \
     mv fastp.1.3.2 /usr/local/bin/fastp && \
     fastp --version
 
+# Install Trimmomatic (NZ workshop), with the NeSI module adapter path the lesson uses
+ARG TRIMMOMATIC_VERSION=0.39
+RUN wget https://github.com/usadellab/Trimmomatic/releases/download/v${TRIMMOMATIC_VERSION}/Trimmomatic-${TRIMMOMATIC_VERSION}.zip && \
+    unzip Trimmomatic-${TRIMMOMATIC_VERSION}.zip && \
+    mv Trimmomatic-${TRIMMOMATIC_VERSION} /opt/ && \
+    rm Trimmomatic-${TRIMMOMATIC_VERSION}.zip && \
+    printf '#!/bin/bash\nexec java -jar /opt/Trimmomatic-%s/trimmomatic-%s.jar "$@"\n' ${TRIMMOMATIC_VERSION} ${TRIMMOMATIC_VERSION} > /usr/local/bin/trimmomatic && \
+    chmod +x /usr/local/bin/trimmomatic && \
+    mkdir -p /opt/nesi/CS400_centos7_bdw/Trimmomatic/0.39-Java-1.8.0_144 && \
+    ln -s /opt/Trimmomatic-${TRIMMOMATIC_VERSION}/adapters /opt/nesi/CS400_centos7_bdw/Trimmomatic/0.39-Java-1.8.0_144/adapters && \
+    trimmomatic -version
+
 # install R packages
 RUN Rscript -e 'install.packages("BiocManager", repos = "https://cloud.r-project.org")' \
     && Rscript -e 'BiocManager::install("limma")' \
@@ -160,6 +227,10 @@ RUN Rscript -e 'install.packages("BiocManager", repos = "https://cloud.r-project
     && Rscript -e 'install.packages("ggiraph")' \
     && Rscript -e 'install.packages("plotly")'
 
+# install R packages for the NZ workshop
+RUN Rscript -e 'BiocManager::install(c("clusterProfiler", "enrichplot"))' \
+    && Rscript -e 'install.packages("pheatmap")'
+
 # confirm all R packages load
 RUN Rscript -e 'library(BiocManager)' \
     && Rscript -e 'library(limma)' \
@@ -172,10 +243,19 @@ RUN Rscript -e 'library(BiocManager)' \
     && Rscript -e 'library(GO.db)' \
     && Rscript -e 'library(org.Sc.sgd.db)' \
     && Rscript -e 'library(ggiraph)' \
-    && Rscript -e 'library(plotly)'
+    && Rscript -e 'library(plotly)' \
+    && Rscript -e 'library(tidyverse)' \
+    && Rscript -e 'library(clusterProfiler)' \
+    && Rscript -e 'library(enrichplot)' \
+    && Rscript -e 'library(pheatmap)'
 
 # Set up environment variables for the virtual environment
 ENV PATH="/opt/venv/bin:$PATH"
 
-# copy data
-COPY docker/RNA_seq/ /var/lib/RNA_seq/
+# copy data, one layer per dataset; template/script.sh.erb stages the selected one into ~/RNA_seq
+COPY --from=data /var/lib/rnaseq/yeast/ /var/lib/rnaseq/yeast/
+COPY --from=data /var/lib/rnaseq/nz-genomeindex/ /var/lib/rnaseq/nz-genomeindex/
+COPY --from=data /var/lib/rnaseq/nz/ /var/lib/rnaseq/nz/
+
+# stages the selected dataset into ~/RNA_seq at session start (called from template/script.sh.erb)
+COPY --chmod=755 docker/stage-rnaseq-data /usr/local/bin/stage-rnaseq-data

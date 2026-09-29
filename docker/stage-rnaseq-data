@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+#
+# Stage an RNA-seq workshop dataset from /var/lib/rnaseq/<dataset> into ~/RNA_seq.
+# Existing files are never overwritten, so learner work survives session restarts.
+#
+set -euo pipefail
+
+dataset="${1:-nz}"
+src="/var/lib/rnaseq/${dataset}"
+dest="${HOME}/RNA_seq"
+
+if [[ ! -f "${src}/.dataset" ]]; then
+    echo "stage-rnaseq-data: unknown dataset '${dataset}'" >&2
+    exit 1
+fi
+
+# both workshops use ~/RNA_seq, so a different dataset already there is moved aside rather than merged
+# (homes without a marker were staged by app versions <= v0.4.0, which only shipped the yeast dataset)
+if [[ -d "${dest}" ]] && [[ -n "$(ls -A "${dest}")" ]]; then
+    current="$(cat "${dest}/.dataset" 2>/dev/null || echo yeast)"
+    if [[ "${current}" != "${dataset}" ]]; then
+        backup="${dest}_${current}_$(date +%Y%m%d%H%M%S)"
+        echo "stage-rnaseq-data: ~/RNA_seq holds the ${current} dataset, moving it to ${backup}"
+        mv "${dest}" "${backup}"
+    fi
+fi
+
+mkdir -p "${dest}"
+rsync -rlt --ignore-existing "${src}/" "${dest}/"
+echo "stage-rnaseq-data: staged ${dataset} dataset into ${dest}"

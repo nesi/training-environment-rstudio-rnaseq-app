@@ -51,8 +51,14 @@ cd $HOME
 set -x
 echo "Starting up rserver..."
 
-# copy data
-rsync --ignore-existing -avz /var/lib/RNA_seq/ ~/RNA_seq/
+# copy the selected workshop dataset into ~/RNA_seq
+stage-rnaseq-data "${RNASEQ_DATASET:-nz}"
+
+# lesson R code uses paths relative to ~/RNA_seq, so start R there unless the user has set their own prefs
+if [ ! -f ~/.config/rstudio/rstudio-prefs.json ]; then
+    mkdir -p ~/.config/rstudio
+    echo '{"initial_working_directory": "~/RNA_seq"}' > ~/.config/rstudio/rstudio-prefs.json
+fi
 
 # launch rserver
 rserver \
