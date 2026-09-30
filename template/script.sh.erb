@@ -54,10 +54,13 @@ echo "Starting up rserver..."
 # copy the selected workshop dataset into ~/RNA_seq
 stage-rnaseq-data "${RNASEQ_DATASET:-nz}"
 
-# lesson R code uses paths relative to ~/RNA_seq, so start R there unless the user has set their own prefs
-if [ ! -f ~/.config/rstudio/rstudio-prefs.json ]; then
-    mkdir -p ~/.config/rstudio
-    echo '{"initial_working_directory": "~/RNA_seq"}' > ~/.config/rstudio/rstudio-prefs.json
+# RStudio starts in the home directory. v0.5.0-v0.5.1 wrote an initial working
+# directory of ~/RNA_seq into the user's prefs; remove exactly that setting so
+# those users land in home too, leaving any other prefs (and any directory the
+# user chose themselves) alone.
+RSTUDIO_PREFS=~/.config/rstudio/rstudio-prefs.json
+if [ -f "${RSTUDIO_PREFS}" ] && jq -e '.initial_working_directory == "~/RNA_seq"' "${RSTUDIO_PREFS}" > /dev/null 2>&1; then
+    jq 'del(.initial_working_directory)' "${RSTUDIO_PREFS}" > "${RSTUDIO_PREFS}.tmp" && mv "${RSTUDIO_PREFS}.tmp" "${RSTUDIO_PREFS}"
 fi
 
 # launch rserver
