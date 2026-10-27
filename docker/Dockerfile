@@ -47,9 +47,13 @@ RUN curl -fsSL -o /tmp/RNA_seq.zip https://github.com/GenomicsAotearoa/RNA-seq-d
     # learners create as they go
     && echo nz > /var/lib/rnaseq/nz/.dataset
 
+# Trimmomatic adapter files for the NZ workshop, staged with the data into ~/RNA_seq/adapters
+COPY docker/adapters/ /var/lib/rnaseq/nz/adapters/
+
 # Yeast dataset (GenomicsAotearoa/RNA-seq-workshop), bundled in this repo
 COPY docker/RNA_seq/ /var/lib/rnaseq/yeast/
 RUN echo yeast > /var/lib/rnaseq/yeast/.dataset \
+    && chmod 644 /var/lib/rnaseq/nz/adapters/* \
     && chmod -R u=rwX,go=rX /var/lib/rnaseq
 
 
@@ -229,7 +233,7 @@ RUN Rscript -e 'install.packages("BiocManager", repos = "https://cloud.r-project
 
 # install R packages for the NZ workshop
 RUN Rscript -e 'BiocManager::install(c("clusterProfiler", "enrichplot"))' \
-    && Rscript -e 'install.packages("pheatmap")'
+    && Rscript -e 'install.packages(c("pheatmap", "ggrepel", "ggfortify"))'
 
 # confirm all R packages load
 RUN Rscript -e 'library(BiocManager)' \
@@ -247,7 +251,9 @@ RUN Rscript -e 'library(BiocManager)' \
     && Rscript -e 'library(tidyverse)' \
     && Rscript -e 'library(clusterProfiler)' \
     && Rscript -e 'library(enrichplot)' \
-    && Rscript -e 'library(pheatmap)'
+    && Rscript -e 'library(pheatmap)' \
+    && Rscript -e 'library(ggrepel)' \
+    && Rscript -e 'library(ggfortify)'
 
 # Set up environment variables for the virtual environment
 ENV PATH="/opt/venv/bin:$PATH"

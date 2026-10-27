@@ -12,3 +12,5 @@ The image carries two workshop datasets under `/var/lib/rnaseq/`. The **Workshop
 | `yeast` | [RNA-seq workshop (yeast)](https://genomicsaotearoa.github.io/RNA-seq-workshop/) | bundled in `docker/RNA_seq/` |
 
 The build rebuilds the NZ backup STAR index (`--sjdbOverhang 124 --genomeSAindexNbases 11`), because the one in the zip is 2 GB. It lives at `/var/lib/rnaseq/nz-genomeindex`, and `~/RNA_seq/backup-files/genomeindex` symlinks to it rather than holding a copy in each home directory.
+
+The NZ dataset also gets `~/RNA_seq/adapters/`, the Trimmomatic adapter FASTA files (`TruSeq3-PE.fa` and friends) bundled in `docker/adapters/`.
